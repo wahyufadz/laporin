@@ -1,0 +1,566 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import type { OrderInput, WhatsAppMessage, Customer, Factory } from '$lib/types';
+	import { factories, customersByFactory } from '$lib/customers';
+	import { ADMIN_WHATSAPP_NUMBER } from '$lib/sensitive-data';
+
+	// Get the factory ID from the URL
+	const factoryId = $page.params.factoryId;
+	
+	// Find the selected factory
+	const selectedFactory = factories.find(f => f.id === factoryId);
+	
+	// If factory not found, redirect to home
+	if (!selectedFactory) {
+		goto('/');
+	}
+	
+	// Get customers for the selected factory
+	const initialCustomers = customersByFactory[factoryId] || [];
+	
+	// Create a reactive customers array
+	let customers: Customer[] = [...initialCustomers];
+	
+	let orders: Map<string, number> = new Map(); // customerId -> quantity
+	let inputBy = '';
+	let showNewCustomerForm = false;
+	let newCustomer: Customer = {
+		id: '',
+		name: ''
+	};
+
+	function addOrder(customerId: string, quantity: number) {
+		if (quantity > 0) {
+			orders.set(customerId, quantity);
+			orders = orders; // trigger reactivity
+		}
+	}
+
+	function removeOrder(customerId: string) {
+		orders.delete(customerId);
+		orders = orders; // trigger reactivity
+	}
+
+	function addNewCustomer() {
+		if (newCustomer.name) {
+			const id = `${factoryId}-${customers.length + 1}`;
+			const customerToAdd = {
+				...newCustomer,
+				id
+			};
+			
+			// Add the new customer to our reactive array
+			customers = [...customers, customerToAdd];
+			
+			showNewCustomerForm = false;
+			newCustomer = {
+				id: '',
+				name: ''
+			};
+		}
+	}
+
+	function generateWhatsAppLink(): string {
+		const message: WhatsAppMessage = {
+			date: new Date().toLocaleDateString('id-ID'),
+			inputBy,
+			orders: Array.from(orders.entries()).map(([customerId, quantity]) => {
+				const customer = customers.find(c => c.id === customerId);
+				return {
+					customerName: customer?.name || 'Unknown',
+					quantity
+				};
+			})
+		};
+
+		const messageText = `*Laporan Pesanan Tahu - ${selectedFactory?.name || 'Unknown'}*\n\n` +
+			`Tanggal: ${message.date}\n` +
+			`Input oleh: ${message.inputBy}\n\n` +
+			`*Ringkasan:*\n` +
+			`• Total Pesanan: ${totalOrders} pcs\n` +
+			`• Total Masak: ${totalMasak} masak\n` +
+			`• Jumlah Pelanggan: ${orders.size} pelanggan\n\n` +
+			`*Daftar Pesanan:*\n` +
+			message.orders.map((order, index) => 
+				`${index + 1}. ${order.customerName}: ${order.quantity} pcs`
+			).join('\n');
+
+		// Use the admin WhatsApp number
+		return `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(messageText)}`;
+	}
+
+	function goBack() {
+		goto('/');
+	}
+
+	$: totalOrders = Array.from(orders.values()).reduce((sum, qty) => sum + qty, 0);
+	$: totalMasak = totalOrders / 4; // Calculate total in "masak" format (with decimals)
+	$: isTotalMasakWhole = Number.isInteger(totalMasak); // Check if total masak is a whole number
+</script>
+
+<svelte:head>
+	<title>Laporin - Pesanan {selectedFactory?.name}</title>
+	<meta name="description" content="Aplikasi pelaporan pesanan tahu untuk pabrik {selectedFactory?.name}" />
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</svelte:head>
+
+<div class="app-container">
+	<header>
+		<div class="logo">
+			<span class="logo-text">Laporin</span>
+			<span class="logo-dot"></span>
+		</div>
+		<div class="header-content">
+			<h1>Laporan Pesanan Tahu</h1>
+			<h2 class="factory-name">{selectedFactory?.name}</h2>
+		</div>
+		<button class="back-button" on:click={goBack}>
+			← Kembali
+		</button>
+	</header>
+
+	<main>
+		<section class="input-section card">
+			<div class="input-group">
+				<label for="input-by">Nama Input</label>
+				<input
+					id="input-by"
+					type="text"
+					bind:value={inputBy}
+					placeholder="Masukkan nama Anda"
+					class="input-field"
+				/>
+			</div>
+		</section>
+
+		<section class="customers-section">
+			<div class="section-header">
+				<h2>Daftar Pelanggan</h2>
+				<button 
+					on:click={() => showNewCustomerForm = !showNewCustomerForm}
+					class="btn btn-accent"
+				>
+					{showNewCustomerForm ? 'Batal' : '+ Tambah'}
+				</button>
+			</div>
+
+			{#if showNewCustomerForm}
+				<div class="new-customer-form card">
+					<h3>Tambah Pelanggan Baru</h3>
+					<div class="input-group">
+						<label for="new-customer-name">Nama Pelanggan</label>
+						<input
+							id="new-customer-name"
+							type="text"
+							bind:value={newCustomer.name}
+							placeholder="Nama Pelanggan Baru"
+							class="input-field"
+						/>
+					</div>
+					<button on:click={addNewCustomer} class="btn btn-primary">
+						Simpan Pelanggan
+					</button>
+				</div>
+			{/if}
+
+			<div class="customers-list">
+				{#each customers as customer}
+					<div class="customer-row card">
+						<div class="customer-info">
+							<h3>{customer.name}</h3>
+						</div>
+						<div class="order-input">
+							<div class="input-group">
+								{#if orders.has(customer.id)}
+									<button 
+										on:click={() => removeOrder(customer.id)}
+										class="btn btn-danger"
+									>
+										Hapus
+									</button>
+								{/if}
+								<input
+									id="quantity-{customer.id}"
+									type="number"
+									min="0"
+									placeholder="0"
+									value={orders.get(customer.id) || ''}
+									on:input={(e) => addOrder(customer.id, parseInt(e.currentTarget.value) || 0)}
+									class="quantity-input"
+								/>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</section>
+
+		<section class="summary-section card">
+			<h2>Ringkasan Pesanan</h2>
+			<div class="summary-stats">
+				<div class="stat-item">
+					<span class="stat-value">{totalOrders}</span>
+					<span class="stat-label">Total Pesanan (pcs)</span>
+				</div>
+				<div class="stat-item">
+					<span class="stat-value">{totalMasak.toFixed(2)}</span>
+					{#if isTotalMasakWhole}
+						<span class="stat-label">Total Pesanan (masak)</span>
+					{:else}
+						<span class="warning-text">Total belum sesuai</span>
+					{/if}
+				</div>
+				<div class="stat-item">
+					<span class="stat-value">{orders.size}</span>
+					<span class="stat-label">Jumlah Pelanggan</span>
+				</div>
+			</div>
+		</section>
+
+		{#if orders.size > 0 && inputBy && isTotalMasakWhole}
+			<a href={generateWhatsAppLink()} target="_blank" class="whatsapp-button btn btn-primary">
+				Kirim ke WhatsApp
+			</a>
+		{/if}
+	</main>
+
+	<footer>
+		<p>© 2023 Laporin - Aplikasi Pelaporan Pesanan Tahu</p>
+	</footer>
+</div>
+
+<style>
+	.app-container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 2rem 1rem;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+	}
+
+	header {
+		text-align: center;
+		margin-bottom: 2rem;
+		position: relative;
+	}
+
+	.logo {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 1rem;
+	}
+
+	.logo-text {
+		font-size: 2rem;
+		font-weight: 700;
+		color: var(--primary-color);
+	}
+
+	.logo-dot {
+		width: 12px;
+		height: 12px;
+		background-color: var(--accent-color);
+		border-radius: 50%;
+		margin-left: 4px;
+	}
+
+	.header-content {
+		margin-bottom: 1rem;
+	}
+
+	h1 {
+		font-size: 1.5rem;
+		color: var(--text-color);
+		margin-bottom: 0.5rem;
+	}
+
+	.factory-name {
+		font-size: 1.2rem;
+		color: var(--primary-color);
+		margin-bottom: 1rem;
+	}
+
+	h2 {
+		font-size: 1.25rem;
+		color: var(--text-color);
+		margin-bottom: 1rem;
+	}
+
+	h3 {
+		font-size: 1.1rem;
+		color: var(--text-color);
+		margin-bottom: 1rem;
+	}
+
+	.back-button {
+		position: absolute;
+		top: 0;
+		left: 0;
+		padding: 0.5rem 1rem;
+		background-color: var(--background-color);
+		border: 1px solid var(--border-color);
+		border-radius: 8px;
+		color: var(--text-color);
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.back-button:hover {
+		background-color: var(--border-color);
+	}
+
+	main {
+		flex: 1;
+	}
+
+	.input-section {
+		margin-bottom: 2rem;
+	}
+
+	.input-group {
+		margin-bottom: 1rem;
+	}
+
+	.input-group label {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-weight: 500;
+		color: var(--text-light);
+	}
+
+	.input-field {
+		width: 100%;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--border-color);
+		border-radius: 8px;
+		font-size: 1rem;
+		transition: all 0.2s ease;
+	}
+
+	.input-field:focus {
+		border-color: var(--primary-light);
+		box-shadow: 0 0 0 2px rgba(139, 195, 74, 0.2);
+	}
+
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1.5rem;
+	}
+
+	.customers-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-bottom: 2rem;
+		width: 100%;
+	}
+
+	.customer-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem;
+		width: 100%;
+		border: 1px solid var(--border-color);
+		border-radius: 8px;
+		background-color: var(--background-color);
+	}
+
+	.customer-info {
+		flex: 1;
+		min-width: 0; /* Prevents text overflow */
+	}
+
+	.customer-info h3 {
+		margin: 0;
+		font-size: 1.1rem;
+		color: var(--primary-color);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.customer-info p {
+		margin: 0.25rem 0 0;
+		color: var(--text-light);
+		font-size: 0.9rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.order-input {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		margin-left: 1rem;
+		flex-shrink: 0;
+	}
+
+	.quantity-input {
+		width: 80px;
+		padding: 0.75rem;
+		border: 1px solid var(--border-color);
+		border-radius: 8px;
+		font-size: 1rem;
+		text-align: center;
+	}
+
+	.btn-danger {
+		padding: 0.5rem 1rem;
+		font-size: 0.9rem;
+		white-space: nowrap;
+	}
+
+	.new-customer-form {
+		margin-bottom: 2rem;
+	}
+
+	.summary-section {
+		margin: 2rem 0;
+	}
+
+	.summary-stats {
+		display: flex;
+		gap: 2rem;
+		margin-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.stat-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		flex: 1;
+		min-width: 120px;
+	}
+
+	.stat-value {
+		font-size: 2rem;
+		font-weight: 700;
+		color: var(--primary-color);
+	}
+
+	.stat-label {
+		font-size: 0.9rem;
+		color: var(--text-light);
+	}
+
+	.whatsapp-button {
+		display: block;
+		text-align: center;
+		margin: 2rem auto;
+		max-width: 300px;
+	}
+
+	footer {
+		text-align: center;
+		margin-top: 3rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--border-color);
+		color: var(--text-light);
+		font-size: 0.9rem;
+	}
+
+	.warning-text {
+		color: var(--accent-color);
+		font-size: 0.8rem;
+		margin-top: 0.25rem;
+		font-style: italic;
+	}
+
+	@media (max-width: 768px) {
+		.app-container {
+			padding: 1rem;
+		}
+
+		.customer-row {
+			flex-direction: row; /* Keep as row even on mobile */
+			padding: 0.75rem;
+		}
+
+		.customer-info {
+			max-width: 60%;
+		}
+
+		.order-input {
+			margin-left: 0.5rem;
+			justify-content: flex-end;
+		}
+
+		.quantity-input {
+			width: 70px;
+			padding: 0.5rem;
+		}
+
+		.btn-danger {
+			padding: 0.5rem 0.75rem;
+		}
+
+		.summary-stats {
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+
+		.stat-item {
+			flex: 1 1 calc(50% - 1rem);
+			min-width: 120px;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.customer-row {
+			flex-direction: row;
+			padding: 0.5rem;
+		}
+
+		.customer-info {
+			max-width: 50%;
+		}
+
+		.customer-info h3 {
+			font-size: 1rem;
+		}
+
+		.customer-info p {
+			font-size: 0.8rem;
+		}
+
+		.quantity-input {
+			width: 60px;
+			padding: 0.4rem;
+		}
+
+		.btn-danger {
+			padding: 0.4rem 0.6rem;
+			font-size: 0.8rem;
+		}
+
+		.summary-stats {
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.stat-item {
+			flex: 1 1 100%;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			text-align: left;
+		}
+	}
+</style> 
