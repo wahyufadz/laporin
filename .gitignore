@@ -23,4 +23,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # Sensitive data
-src/lib/sensitive-data.ts
+src/lib/customer-data.ts

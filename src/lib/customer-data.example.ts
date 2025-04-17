@@ -1,8 +1,5 @@
 import type { Customer, Factory } from './types';
 
-// WhatsApp number for sending reports
-export const ADMIN_WHATSAPP_NUMBER = '628XXXXXXXXXX'; // Replace with your actual number
-
 // Factory data
 export const factories: Factory[] = [
     { id: 'saelus', name: 'Saelus' },
@@ -41,9 +38,4 @@ export const customersByFactory: Record<string, Customer[]> = {
         { id: 'ceningan-4', name: 'Pelanggan Ceningan 4' },
         { id: 'ceningan-5', name: 'Pelanggan Ceningan 5' }
     ]
-};
-
-// Instructions:
-// 1. Copy this file to sensitive-data.ts
-// 2. Replace the placeholder values with your actual data
-// 3. Make sure sensitive-data.ts is in your .gitignore file 
+}; 

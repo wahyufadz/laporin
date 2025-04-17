@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { OrderInput, WhatsAppMessage, Customer, Factory } from '$lib/types';
-	import { factories, customersByFactory } from '$lib/customers';
-	import { ADMIN_WHATSAPP_NUMBER } from '$lib/sensitive-data';
+	import { factories, customersByFactory } from '$lib/customer-data';
+	import { env } from '$env/dynamic/public';
 
 	// Get the factory ID from the URL
 	const factoryId = $page.params.factoryId;
@@ -87,8 +86,8 @@
 				`${index + 1}. ${order.customerName}: ${order.quantity} pcs`
 			).join('\n');
 
-		// Use the admin WhatsApp number
-		return `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(messageText)}`;
+		// Use the admin WhatsApp number from environment variable
+		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(messageText)}`;
 	}
 
 	function goBack() {
