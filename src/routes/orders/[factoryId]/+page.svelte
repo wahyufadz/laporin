@@ -34,6 +34,8 @@
 		if (quantity > 0) {
 			orders.set(customerId, quantity);
 			orders = orders; // trigger reactivity
+		} else {
+			removeOrder(customerId);
 		}
 	}
 
@@ -62,8 +64,13 @@
 	}
 
 	function generateWhatsAppLink(): string {
+		const today = new Date();
+		const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+		const dayName = days[today.getDay()];
+		const formattedDate = `${dayName} ${today.toLocaleDateString('id-ID')}`;
+
 		const message: WhatsAppMessage = {
-			date: new Date().toLocaleDateString('id-ID'),
+			date: formattedDate,
 			inputBy,
 			orders: Array.from(orders.entries()).map(([customerId, quantity]) => {
 				const customer = customers.find(c => c.id === customerId);
@@ -86,7 +93,6 @@
 				`${index + 1}. ${order.customerName}: ${order.quantity} pcs`
 			).join('\n');
 
-		// Use the admin WhatsApp number from environment variable
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(messageText)}`;
 	}
 
@@ -137,92 +143,104 @@
 		</section>
 
 		<section class="customers-section">
-			<div class="section-header">
-				<h2>Daftar Pelanggan</h2>
-				<button 
-					on:click={() => showNewCustomerForm = !showNewCustomerForm}
-					class="btn btn-accent"
-				>
-					{showNewCustomerForm ? 'Batal' : '+ Tambah'}
-				</button>
-			</div>
-
-			{#if showNewCustomerForm}
-				<div class="new-customer-form card">
-					<h3>Tambah Pelanggan Baru</h3>
-					<div class="input-group">
-						<label for="new-customer-name">Nama Pelanggan</label>
-						<input
-							id="new-customer-name"
-							type="text"
-							bind:value={newCustomer.name}
-							placeholder="Nama Pelanggan Baru"
-							class="input-field"
-						/>
-					</div>
-					<button on:click={addNewCustomer} class="btn btn-primary">
-						Simpan Pelanggan
+			{#if inputBy}
+				<div class="section-header">
+					<h2>Daftar Pelanggan</h2>
+					<button 
+						on:click={() => showNewCustomerForm = !showNewCustomerForm}
+						class="btn btn-accent"
+					>
+						{showNewCustomerForm ? 'Batal' : '+ Tambah'}
 					</button>
 				</div>
-			{/if}
 
-			<div class="customers-list">
-				{#each customers as customer}
-					<div class="customer-row card">
-						<div class="customer-info">
-							<h3>{customer.name}</h3>
+				{#if showNewCustomerForm}
+					<div class="new-customer-form card">
+						<h3>Tambah Pelanggan Baru</h3>
+						<div class="input-group">
+							<label for="new-customer-name">Nama Pelanggan</label>
+							<input
+								id="new-customer-name"
+								type="text"
+								bind:value={newCustomer.name}
+								placeholder="Nama Pelanggan Baru"
+								class="input-field"
+							/>
 						</div>
-						<div class="order-input">
-							<div class="input-group">
-								{#if orders.has(customer.id)}
-									<button 
-										on:click={() => removeOrder(customer.id)}
-										class="btn btn-danger"
-									>
-										Hapus
-									</button>
-								{/if}
-								<input
-									id="quantity-{customer.id}"
-									type="number"
-									min="0"
-									placeholder="0"
-									value={orders.get(customer.id) || ''}
-									on:input={(e) => addOrder(customer.id, parseInt(e.currentTarget.value) || 0)}
-									class="quantity-input"
-								/>
+						<button on:click={addNewCustomer} class="btn btn-primary">
+							Simpan Pelanggan
+						</button>
+					</div>
+				{/if}
+
+				<div class="customers-list">
+					{#each customers as customer}
+						<div class="customer-row card">
+							<div class="customer-info">
+								<h3>{customer.name}</h3>
+							</div>
+							<div class="order-input">
+								<div class="input-group">
+									{#if orders.has(customer.id)}
+										<button 
+											on:click={() => removeOrder(customer.id)}
+											class="btn btn-danger"
+										>
+											Hapus
+										</button>
+									{/if}
+									<input
+										id="quantity-{customer.id}"
+										type="number"
+										min="0"
+										placeholder="0"
+										value={orders.get(customer.id) || ''}
+										on:input={(e) => addOrder(customer.id, parseInt(e.currentTarget.value) || 0)}
+										on:focus={(e) => e.target.select()}
+										class="quantity-input"
+									/>
+								</div>
 							</div>
 						</div>
+					{/each}
+				</div>
+			{:else}
+				<div class="empty-state card">
+					<p>Silakan masukkan nama Anda di atas untuk melihat daftar pelanggan.</p>
+				</div>
+			{/if}
+		</section>
+
+		{#if inputBy}
+			<section class="summary-section card">
+				<h2>Ringkasan Pesanan</h2>
+				<div class="summary-stats">
+					<div class="stat-item">
+						<span class="stat-value">{totalOrders}</span>
+						<span class="stat-label">Total Pesanan (pcs)</span>
 					</div>
-				{/each}
-			</div>
-		</section>
+					<div class="stat-item">
+						<span class="stat-value">{totalMasak.toFixed(2)}</span>
+						{#if isTotalMasakWhole}
+							<span class="stat-label">Total Pesanan (masak)</span>
+						{:else}
+							<span class="stat-label warning">Total belum sesuai</span>
+						{/if}
+					</div>
+					<div class="stat-item">
+						<span class="stat-value">{orders.size}</span>
+						<span class="stat-label">Jumlah Pelanggan</span>
+					</div>
+				</div>
+			</section>
 
-		<section class="summary-section card">
-			<h2>Ringkasan Pesanan</h2>
-			<div class="summary-stats">
-				<div class="stat-item">
-					<span class="stat-value">{totalOrders}</span>
-					<span class="stat-label">Total Pesanan (pcs)</span>
-				</div>
-				<div class="stat-item">
-					<span class="stat-value">{totalMasak.toFixed(2)}</span>
-					{#if isTotalMasakWhole}
-						<span class="stat-label">Total Pesanan (masak)</span>
-					{:else}
-						<span class="warning-text">Total belum sesuai</span>
-					{/if}
-				</div>
-				<div class="stat-item">
-					<span class="stat-value">{orders.size}</span>
-					<span class="stat-label">Jumlah Pelanggan</span>
-				</div>
-			</div>
-		</section>
-
-		{#if orders.size > 0 && inputBy && isTotalMasakWhole}
-			<a href={generateWhatsAppLink()} target="_blank" class="whatsapp-button btn btn-primary">
-				Kirim ke WhatsApp
+			<a 
+				href={orders.size > 0 && isTotalMasakWhole ? generateWhatsAppLink() : '#'} 
+				target="_blank" 
+				class="whatsapp-button btn btn-primary {!orders.size || !isTotalMasakWhole ? 'disabled' : ''}"
+				aria-disabled={!orders.size || !isTotalMasakWhole}
+			>
+				{orders.size > 0 && isTotalMasakWhole ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
 			</a>
 		{/if}
 	</main>
@@ -382,6 +400,7 @@
 	.customer-info h3 {
 		margin: 0;
 		font-size: 1.1rem;
+		font-weight: 600;
 		color: var(--primary-color);
 		white-space: nowrap;
 		overflow: hidden;
@@ -410,13 +429,26 @@
 		padding: 0.75rem;
 		border: 1px solid var(--border-color);
 		border-radius: 8px;
-		font-size: 1rem;
+		font-size: 1.2rem;
+		font-weight: 600;
 		text-align: center;
+	}
+
+	/* Hide number input spinners */
+	.quantity-input::-webkit-outer-spin-button,
+	.quantity-input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	.quantity-input[type=number] {
+		-moz-appearance: textfield;
 	}
 
 	.btn-danger {
 		padding: 0.5rem 1rem;
-		font-size: 0.9rem;
+		font-size: 1.1rem;
+		font-weight: 600;
 		white-space: nowrap;
 	}
 
@@ -460,6 +492,20 @@
 		text-align: center;
 		margin: 2rem auto;
 		max-width: 300px;
+		transition: all 0.2s ease;
+	}
+
+	.whatsapp-button.disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+		background-color: var(--border-color);
+		color: var(--text-color);
+	}
+
+	.whatsapp-button.disabled:hover {
+		transform: none;
+		box-shadow: none;
+		background-color: var(--border-color);
 	}
 
 	footer {
@@ -475,6 +521,18 @@
 		color: var(--accent-color);
 		font-size: 0.8rem;
 		margin-top: 0.25rem;
+		font-style: italic;
+	}
+
+	.empty-state {
+		text-align: center;
+		padding: 2rem;
+		color: var(--text-light);
+	}
+
+	.stat-label.warning {
+		color: var(--primary-color);
+		font-weight: 600;
 		font-style: italic;
 	}
 
