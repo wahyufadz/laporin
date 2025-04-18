@@ -93,7 +93,7 @@
 				`${index + 1}. ${order.customerName}: ${order.quantity} pcs`
 			).join('\n');
 
-		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(messageText)}`;
+		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
 
 	function goBack() {
