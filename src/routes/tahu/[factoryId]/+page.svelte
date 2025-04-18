@@ -14,7 +14,7 @@
 	
 	// If factory not found, redirect to home
 	if (!selectedFactory) {
-		goto('/');
+		goto('/tahu');
 	}
 	
 	// Get customers for the selected factory
@@ -95,7 +95,7 @@
 	}
 
 	function goBack() {
-		goto('/');
+		goto('/tahu');
 	}
 
 	$: totalOrders = Array.from(orders.values()).reduce((sum, qty) => sum + qty, 0);
@@ -242,7 +242,7 @@
 	</main>
 
 	<footer>
-		<p>© 2023 Laporin - Aplikasi Pelaporan Pesanan Tahu</p>
+		<p>© 2025 Laporin - Aplikasi Pelaporan Pesanan Tahu</p>
 	</footer>
 </div>
 
@@ -260,32 +260,26 @@
 		text-align: center;
 		margin-bottom: 2rem;
 		position: relative;
-		padding-top: 2.5rem; /* Add padding to prevent overlap */
-	}
-
-	.logo {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-bottom: 1rem;
-	}
-
-	.logo-text {
-		font-size: 2rem;
-		font-weight: 700;
-		color: var(--primary-color);
-	}
-
-	.logo-dot {
-		width: 12px;
-		height: 12px;
-		background-color: var(--accent-color);
-		border-radius: 50%;
-		margin-left: 4px;
+		padding-top: 2.5rem;
 	}
 
 	.header-content {
 		margin-bottom: 1rem;
+	}
+
+	.back-button {
+		position: absolute;
+		top: 0.5rem;
+		left: 0;
+		padding: 0.5rem 1rem;
+		background-color: var(--background-color);
+		border: 1px solid var(--border-color);
+		border-radius: 8px;
+		color: var(--text-color);
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		z-index: 1;
 	}
 
 	h1 {
@@ -310,25 +304,6 @@
 		font-size: 1.1rem;
 		color: var(--text-color);
 		margin-bottom: 1rem;
-	}
-
-	.back-button {
-		position: absolute;
-		top: 0.5rem; /* Adjust top position */
-		left: 0;
-		padding: 0.5rem 1rem;
-		background-color: var(--background-color);
-		border: 1px solid var(--border-color);
-		border-radius: 8px;
-		color: var(--text-color);
-		font-size: 0.9rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		z-index: 1; /* Ensure button stays above other elements */
-	}
-
-	.back-button:hover {
-		background-color: var(--border-color);
 	}
 
 	main {
@@ -392,7 +367,7 @@
 
 	.customer-info {
 		flex: 1;
-		min-width: 0; /* Prevents text overflow */
+		min-width: 0;
 	}
 
 	.customer-info h3 {
@@ -432,7 +407,6 @@
 		text-align: center;
 	}
 
-	/* Hide number input spinners */
 	.quantity-input::-webkit-outer-spin-button,
 	.quantity-input::-webkit-inner-spin-button {
 		-webkit-appearance: none;
@@ -540,16 +514,16 @@
 		}
 
 		header {
-			padding-top: 3rem; /* Increase padding on mobile */
+			padding-top: 3rem;
 		}
 
 		.back-button {
-			top: 0.25rem; /* Adjust top position on mobile */
-			padding: 0.4rem 0.75rem; /* Slightly smaller padding on mobile */
+			top: 0.25rem;
+			padding: 0.4rem 0.75rem;
 		}
 
 		.customer-row {
-			flex-direction: row; /* Keep as row even on mobile */
+			flex-direction: row;
 			padding: 0.75rem;
 		}
 

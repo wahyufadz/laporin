@@ -3,7 +3,7 @@
 	
 	// Define the navigation items
 	const navItems = [
-		{ href: '/', icon: '🏭', label: 'Laporan Tahu' },
+		{ href: '/tahu', icon: '🏭', label: 'Laporan Tahu' },
 		{ href: '#', icon: '📦', label: 'Laporan Produk', disabled: true },
 		{ href: '#', icon: '📊', label: 'Laporan Keuangan', disabled: true },
 		{ href: '/about', icon: 'ℹ️', label: 'Tentang' }
