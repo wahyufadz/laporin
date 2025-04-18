@@ -44,10 +44,6 @@
 	<NavigationBar />
 
 	<header>
-		<div class="logo">
-			<span class="logo-text">Laporin</span>
-			<span class="logo-dot"></span>
-		</div>
 		<h1>Pilih Pabrik</h1>
 		<p class="subtitle">Silakan pilih pabrik untuk melanjutkan ke halaman pesanan</p>
 	</header>
