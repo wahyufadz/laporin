@@ -72,13 +72,10 @@
 		const message: WhatsAppMessage = {
 			date: formattedDate,
 			inputBy,
-			orders: Array.from(orders.entries()).map(([customerId, quantity]) => {
-				const customer = customers.find(c => c.id === customerId);
-				return {
-					customerName: customer?.name || 'Unknown',
-					quantity
-				};
-			})
+			orders: customers.map(customer => ({
+				customerName: customer.name,
+				quantity: orders.get(customer.id) || 0
+			}))
 		};
 
 		const messageText = `*Laporan Pesanan Tahu - ${selectedFactory?.name || 'Unknown'}*\n\n` +
@@ -89,8 +86,8 @@
 			`• Total Masak: ${totalMasak} masak\n` +
 			`• Jumlah Pelanggan: ${orders.size} pelanggan\n\n` +
 			`*Daftar Pesanan:*\n` +
-			message.orders.map((order, index) => 
-				`${index + 1}. ${order.customerName}: ${order.quantity} pcs`
+			message.orders.map(order => 
+				`${order.customerName}\t\t${order.quantity}`
 			).join('\n');
 
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
