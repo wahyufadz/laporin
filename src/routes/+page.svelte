@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { factories } from '$lib/customers';
 	import type { Factory } from '$lib/types';
+	import NavigationBar from '$lib/components/NavigationBar.svelte';
 
 	let selectedFactory: Factory | null = null;
 
@@ -40,6 +41,8 @@
 </svelte:head>
 
 <div class="app-container">
+	<NavigationBar />
+
 	<header>
 		<div class="logo">
 			<span class="logo-text">Laporin</span>

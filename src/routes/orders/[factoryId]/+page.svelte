@@ -4,6 +4,7 @@
 	import type { OrderInput, WhatsAppMessage, Customer, Factory } from '$lib/types';
 	import { factories, customersByFactory } from '$lib/customer-data';
 	import { env } from '$env/dynamic/public';
+	import NavigationBar from '$lib/components/NavigationBar.svelte';
 
 	// Get the factory ID from the URL
 	const factoryId = $page.params.factoryId;
@@ -111,11 +112,9 @@
 </svelte:head>
 
 <div class="app-container">
+	<NavigationBar />
+
 	<header>
-		<div class="logo">
-			<span class="logo-text">Laporin</span>
-			<span class="logo-dot"></span>
-		</div>
 		<div class="header-content">
 			<h1>Laporan Pesanan Tahu</h1>
 			<h2 class="factory-name">{selectedFactory?.name}</h2>
@@ -261,6 +260,7 @@
 		text-align: center;
 		margin-bottom: 2rem;
 		position: relative;
+		padding-top: 2.5rem; /* Add padding to prevent overlap */
 	}
 
 	.logo {
@@ -314,7 +314,7 @@
 
 	.back-button {
 		position: absolute;
-		top: 0;
+		top: 0.5rem; /* Adjust top position */
 		left: 0;
 		padding: 0.5rem 1rem;
 		background-color: var(--background-color);
@@ -324,6 +324,7 @@
 		font-size: 0.9rem;
 		cursor: pointer;
 		transition: all 0.2s ease;
+		z-index: 1; /* Ensure button stays above other elements */
 	}
 
 	.back-button:hover {
@@ -536,6 +537,15 @@
 	@media (max-width: 768px) {
 		.app-container {
 			padding: 1rem;
+		}
+
+		header {
+			padding-top: 3rem; /* Increase padding on mobile */
+		}
+
+		.back-button {
+			top: 0.25rem; /* Adjust top position on mobile */
+			padding: 0.4rem 0.75rem; /* Slightly smaller padding on mobile */
 		}
 
 		.customer-row {
