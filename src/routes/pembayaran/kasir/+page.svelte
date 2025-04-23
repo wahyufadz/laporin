@@ -41,12 +41,18 @@
 
 		const selectedSalesName = salesList.find(s => s.id === selectedSales)?.name || '';
 
-		const messageText = `${dayName} ${formattedDate}\n` +
+		const messageText = 
+			`${formattedDate}\n` +
 			`${selectedSalesName}\n\n` +
-			`PEMBAYARAN TEMPE\n` +
-			`${bayarTempe || '0'}\t${returTempeKecil || '0'}\t${returTempeBesar || '0'}\t${returTempePanjang || '0'}\t${beliTempeKecil || '0'}\t${beliTempeBesar || '0'}\t${beliTempePanjang || '0'}\n\n` +
-			`PEMBAYARAN TAHU\n` +
-			`${bayarTahu || '0'}`;
+			(bayarTempe ? `Pembayaran Tempe ${bayarTempe || '0'}\n` : `` )+
+			(bayarTahu ? `Pembayaran Tahu ${bayarTahu || '0'}\n` : ``) +
+			(returTempeKecil+returTempePanjang+returTempePanjang !== `` ? `Retur ${returTempeKecil || '0'}/${returTempeBesar || '0'}/${returTempePanjang || '0'}\n` : `` )+
+			(beliTempeKecil+beliTempeBesar+beliTempePanjang !== `` ? `Pesanan ${beliTempeKecil || '0'}/${beliTempeBesar || '0'}/${beliTempePanjang || '0'}\n` : ``)+
+			`\nTEMPE\n` +
+            `${bayarTempe || '0'}\t${returTempeKecil || '0'}\t${returTempeBesar || '0'}\t${returTempePanjang || '0'}\t${beliTempeKecil || '0'}\t${beliTempeBesar || '0'}\t${beliTempePanjang || '0'}\n` +
+            `\nTAHU\n` +
+            `${bayarTahu || '0'}`;
+			;
 
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}

@@ -11,26 +11,40 @@
 		{ id: '3', name: 'Supir 3' }
 	];
 
+	// Data sales
+	const salesList = [
+		{ id: '1', name: 'Sales 1' },
+		{ id: '2', name: 'Sales 2' },
+		{ id: '3', name: 'Sales 3' }
+	];
+
 	// State untuk form
 	let selectedSupir = '';
+	let selectedSales = '';
 	let showForm = false;
 
+	// State untuk tanggal nota
+	let notaDates: { id: number; date: string }[] = [];
+	let nextNotaId = 1;
+
 	// State untuk pembayaran
-	let bayarTempe = '';
-	let bayarTahu = '';
+	let bayarNota = '';
 
-	// State untuk retur
-	let returTempeKecil = '';
-	let returTempeBesar = '';
-	let returTempePanjang = '';
-
-	// State untuk pembelian
-	let beliTempeKecil = '';
-	let beliTempeBesar = '';
-	let beliTempePanjang = '';
+	// State untuk potongan
+	let potonganNota = '';
 
 	function handleSupirSelect() {
 		showForm = !!selectedSupir;
+	}
+
+	function addNotaDate() {
+		notaDates = [...notaDates, { id: nextNotaId, date: '' }];
+		nextNotaId++;
+	}
+	addNotaDate()
+
+	function removeNotaDate(id: number) {
+		notaDates = notaDates.filter(nota => nota.id !== id);
 	}
 
 	function generateWhatsAppLink(): string {
@@ -40,13 +54,15 @@
 		const formattedDate = `${dayName} ${today.toLocaleDateString('id-ID')}`;
 
 		const selectedSupirName = supirList.find(s => s.id === selectedSupir)?.name || '';
+		const selectedSalesName = salesList.find(s => s.id === selectedSales)?.name || '';
+		const notaDatesText = notaDates.map(nota => nota.date).join(', ');
 
 		const messageText = `${dayName} ${formattedDate}\n` +
-			`${selectedSupirName}\n\n` +
-			`PEMBAYARAN TEMPE\n` +
-			`${bayarTempe || '0'}\t${returTempeKecil || '0'}\t${returTempeBesar || '0'}\t${returTempePanjang || '0'}\t${beliTempeKecil || '0'}\t${beliTempeBesar || '0'}\t${beliTempePanjang || '0'}\n\n` +
-			`PEMBAYARAN TAHU\n` +
-			`${bayarTahu || '0'}`;
+			`${selectedSupirName}\n` +
+			`${selectedSalesName}\n` +
+			`Tanggal Nota: ${notaDatesText}\n\n` +
+			`PEMBAYARAN\n` +
+			`${bayarNota || '0'}\t${potonganNota || '0'}`;
 
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
@@ -66,11 +82,8 @@
 	}
 
 	// Validasi form
-	$: isValid = showForm && (
-		(bayarTempe || bayarTahu) &&
-		(returTempeKecil || returTempeBesar || returTempePanjang) &&
-		(beliTempeKecil || beliTempeBesar || beliTempePanjang)
-	);
+	$: showPaymentForm = showForm && notaDates.length > 0;
+	$: isValid = showPaymentForm && (bayarNota || potonganNota);
 </script>
 
 <svelte:head>
@@ -109,175 +122,146 @@
 					{/each}
 				</select>
 			</div>
+			<div class="input-group">
+				<label for="sales-select">Nama Sales</label>
+				<select
+					id="sales-select"
+					bind:value={selectedSales}
+					class="input-field"
+				>
+					<option value="">Pilih Sales</option>
+					{#each salesList as sales}
+						<option value={sales.id}>{sales.name}</option>
+					{/each}
+				</select>
+			</div>
 		</section>
 
 		{#if showForm}
 			<section class="form-section">
 				<div class="form-group card">
-					<h2>Pembayaran</h2>
-					<div class="input-group">
-						<label for="bayar-tempe">Bayar Tempe</label>
-						<input
-							id="bayar-tempe"
-							type="text"
-							inputmode="numeric"
-							bind:value={bayarTempe}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									bayarTempe = formatNumber(value);
-								}
-							}}
-						/>
-					</div>
-					<div class="input-group">
-						<label for="bayar-tahu">Bayar Tahu</label>
-						<input
-							id="bayar-tahu"
-							type="text"
-							inputmode="numeric"
-							bind:value={bayarTahu}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									bayarTahu = formatNumber(value);
-								}
-							}}
-						/>
-					</div>
+					<h2>Tanggal Nota</h2>
+					{#each notaDates as nota (nota.id)}
+						<div class="input-group nota-date-group">
+							<label for="nota-date-{nota.id}">Tanggal Nota {nota.id}</label>
+							<div class="input-with-button">
+								<input
+									id="nota-date-{nota.id}"
+									type="date"
+									bind:value={nota.date}
+									class="input-field"
+								/>
+								<button 
+									class="remove-button" 
+									on:click={() => removeNotaDate(nota.id)}
+									aria-label="Hapus tanggal nota"
+								>
+									🗑️
+								</button>
+							</div>
+						</div>
+					{/each}
+					<button class="add-button" on:click={addNotaDate}>
+						+ Tambah Tanggal Nota
+					</button>
 				</div>
 
-				<div class="form-group card">
-					<h2>Retur Tempe</h2>
-					<div class="input-group">
-						<label for="retur-tempe-kecil">Tempe Kecil</label>
-						<input
-							id="retur-tempe-kecil"
-							type="text"
-							inputmode="numeric"
-							bind:value={returTempeKecil}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									returTempeKecil = formatNumber(value);
-								}
-							}}
-						/>
+				{#if showPaymentForm}
+					<div class="form-group card">
+						<h2>Pembayaran</h2>
+						<div class="input-group">
+							<label for="bayar-nota">Bayar</label>
+							<input
+								id="bayar-nota"
+								type="text"
+								inputmode="numeric"
+								bind:value={bayarNota}
+								placeholder="0"
+								class="input-field"
+								on:focus={(e) => e.target.select()}
+								on:input={(e) => {
+									const value = unformatNumber((e.target as HTMLInputElement).value);
+									if (/^\d*$/.test(value)) {
+										bayarNota = formatNumber(value);
+									}
+								}}
+							/>
+						</div>
 					</div>
-					<div class="input-group">
-						<label for="retur-tempe-besar">Tempe Besar</label>
-						<input
-							id="retur-tempe-besar"
-							type="text"
-							inputmode="numeric"
-							bind:value={returTempeBesar}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									returTempeBesar = formatNumber(value);
-								}
-							}}
-						/>
-					</div>
-					<div class="input-group">
-						<label for="retur-tempe-panjang">Tempe Panjang</label>
-						<input
-							id="retur-tempe-panjang"
-							type="text"
-							inputmode="numeric"
-							bind:value={returTempePanjang}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									returTempePanjang = formatNumber(value);
-								}
-							}}
-						/>
-					</div>
-				</div>
 
-				<div class="form-group card">
-					<h2>Pembelian Tempe</h2>
-					<div class="input-group">
-						<label for="beli-tempe-kecil">Tempe Kecil</label>
-						<input
-							id="beli-tempe-kecil"
-							type="text"
-							inputmode="numeric"
-							bind:value={beliTempeKecil}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									beliTempeKecil = formatNumber(value);
-								}
-							}}
-						/>
+					<div class="form-group card">
+						<h2>Potongan</h2>
+						<div class="input-group">
+							<label for="potongan-nota">Potongan</label>
+							<input
+								id="potongan-nota"
+								type="text"
+								inputmode="numeric"
+								bind:value={potonganNota}
+								placeholder="0"
+								class="input-field"
+								on:focus={(e) => e.target.select()}
+								on:input={(e) => {
+									const value = unformatNumber((e.target as HTMLInputElement).value);
+									if (/^\d*$/.test(value)) {
+										potonganNota = formatNumber(value);
+									}
+								}}
+							/>
+						</div>
 					</div>
-					<div class="input-group">
-						<label for="beli-tempe-besar">Tempe Besar</label>
-						<input
-							id="beli-tempe-besar"
-							type="text"
-							inputmode="numeric"
-							bind:value={beliTempeBesar}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									beliTempeBesar = formatNumber(value);
-								}
-							}}
-						/>
-					</div>
-					<div class="input-group">
-						<label for="beli-tempe-panjang">Tempe Panjang</label>
-						<input
-							id="beli-tempe-panjang"
-							type="text"
-							inputmode="numeric"
-							bind:value={beliTempePanjang}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									beliTempePanjang = formatNumber(value);
-								}
-							}}
-						/>
-					</div>
-				</div>
+				{/if}
 			</section>
 
-			<a 
-				href={isValid ? generateWhatsAppLink() : '#'} 
-				target="_blank" 
-				class="whatsapp-button btn btn-primary {!isValid ? 'disabled' : ''}"
-				aria-disabled={!isValid}
-			>
-				{isValid ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
-			</a>
+			{#if showForm}
+				<div class="form-group card summary-section">
+					<h2>Ringkasan</h2>
+					<div class="summary-content">
+						<p class="summary-line">
+							<span class="label">Nama Supir:</span>
+							<span class="value">{supirList.find(s => s.id === selectedSupir)?.name || ''}</span>
+						</p>
+						<p class="summary-line">
+							<span class="label">Nama Sales:</span>
+							<span class="value">{salesList.find(s => s.id === selectedSales)?.name || ''}</span>
+						</p>
+						<p class="summary-line">
+							<span class="label">Tanggal:</span>
+							<span class="value">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+						</p>
+						<div class="nota-summary">
+							<p class="summary-line">
+								<span class="label">Pembayaran Nota:</span>
+								<span class="value">
+									{#each notaDates as nota}
+										{new Date(nota.date).toLocaleDateString('id-ID', { year: '2-digit', month: 'long', day: 'numeric' })}
+										<br>
+									{/each}
+								</span>
+							</p>
+							<p class="summary-line">
+								<span class="label">Nominal Pembayaran:</span>
+								<span class="value">{bayarNota || '0'}</span>
+							</p>
+							{#if potonganNota}
+								<p class="summary-line">
+									<span class="label">Potongan:</span>
+									<span class="value">{potonganNota}</span>
+								</p>
+							{/if}
+						</div>
+					</div>
+				</div>
+
+				<a 
+					href={isValid ? generateWhatsAppLink() : '#'} 
+					target="_blank" 
+					class="whatsapp-button btn btn-primary {!isValid ? 'disabled' : ''}"
+					aria-disabled={!isValid}
+				>
+					{isValid ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
+				</a>
+			{/if}
 		{/if}
 	</main>
 
@@ -432,5 +416,109 @@
 		.form-group {
 			padding: 1rem;
 		}
+	}
+
+	.nota-date-group {
+		margin-bottom: 1rem;
+	}
+
+	.input-with-button {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.input-with-button .input-field {
+		flex: 1;
+	}
+
+	.remove-button {
+		padding: 0.5rem;
+		background-color: #ff4444;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 1.2rem;
+		line-height: 1;
+		transition: all 0.2s ease;
+		min-width: 2.5rem;
+		height: 2.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.remove-button:hover {
+		background-color: #cc0000;
+		transform: scale(1.05);
+	}
+
+	.add-button {
+		width: 100%;
+		padding: 0.75rem;
+		background-color: var(--primary-light);
+		color: var(--primary-color);
+		border: 1px solid var(--primary-color);
+		border-radius: 8px;
+		cursor: pointer;
+		font-weight: 500;
+		transition: all 0.2s ease;
+		margin-top: 1rem;
+		font-size: 1rem;
+	}
+
+	.add-button:hover {
+		background-color: var(--primary-color);
+		color: white;
+	}
+
+	.summary-section {
+		margin-top: 2rem;
+	}
+
+	.summary-content {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.summary-line {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin: 0;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	.summary-line:last-child {
+		border-bottom: none;
+	}
+
+	.label {
+		font-weight: 500;
+		color: var(--text-light);
+	}
+
+	.value {
+		font-weight: 600;
+		color: var(--text-color);
+	}
+
+	.nota-summary {
+		background-color: var(--background-light);
+		padding: 1rem;
+		border-radius: 8px;
+		margin-top: 0.5rem;
+	}
+
+	.nota-summary .summary-line {
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	.nota-summary .summary-line:last-child {
+		border-bottom: none;
 	}
 </style> 
