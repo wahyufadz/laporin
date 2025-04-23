@@ -4,12 +4,6 @@
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
 
-	// Data supir
-	const supirList = [
-		{ id: '1', name: 'Supir 1' },
-		{ id: '2', name: 'Supir 2' },
-		{ id: '3', name: 'Supir 3' }
-	];
 
 	// Data sales
 	const salesList = [
@@ -19,7 +13,6 @@
 	];
 
 	// State untuk form
-	let selectedSupir = '';
 	let selectedSales = '';
 	let showForm = false;
 
@@ -33,8 +26,8 @@
 	// State untuk potongan
 	let potonganNota = '';
 
-	function handleSupirSelect() {
-		showForm = !!selectedSupir;
+	function handleSalesSelect() {
+		showForm = !!selectedSales;
 	}
 
 	function addNotaDate() {
@@ -53,12 +46,10 @@
 		const dayName = days[today.getDay()];
 		const formattedDate = `${dayName} ${today.toLocaleDateString('id-ID')}`;
 
-		const selectedSupirName = supirList.find(s => s.id === selectedSupir)?.name || '';
 		const selectedSalesName = salesList.find(s => s.id === selectedSales)?.name || '';
 		const notaDatesText = notaDates.map(nota => nota.date).join(', ');
 
-		const messageText = `${dayName} ${formattedDate}\n` +
-			`${selectedSupirName}\n` +
+		const messageText = `${formattedDate}\n` +
 			`${selectedSalesName}\n` +
 			`Tanggal Nota: ${notaDatesText}\n\n` +
 			`PEMBAYARAN\n` +
@@ -108,25 +99,13 @@
 
 	<main>
 		<section class="input-section card">
-			<div class="input-group">
-				<label for="supir-select">Nama Supir</label>
-				<select
-					id="supir-select"
-					bind:value={selectedSupir}
-					on:change={handleSupirSelect}
-					class="input-field"
-				>
-					<option value="">Pilih Supir</option>
-					{#each supirList as supir}
-						<option value={supir.id}>{supir.name}</option>
-					{/each}
-				</select>
-			</div>
+
 			<div class="input-group">
 				<label for="sales-select">Nama Sales</label>
 				<select
 					id="sales-select"
 					bind:value={selectedSales}
+					on:change={handleSalesSelect}
 					class="input-field"
 				>
 					<option value="">Pilih Sales</option>
@@ -217,10 +196,6 @@
 				<div class="form-group card summary-section">
 					<h2>Ringkasan</h2>
 					<div class="summary-content">
-						<p class="summary-line">
-							<span class="label">Nama Supir:</span>
-							<span class="value">{supirList.find(s => s.id === selectedSupir)?.name || ''}</span>
-						</p>
 						<p class="summary-line">
 							<span class="label">Nama Sales:</span>
 							<span class="value">{salesList.find(s => s.id === selectedSales)?.name || ''}</span>
