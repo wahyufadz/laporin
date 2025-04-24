@@ -7,15 +7,16 @@
 		{ href: '/pembayaran', icon: '💰', label: 'Pembayaran' },
 		{ href: '#', icon: '📦', label: 'Laporan Produk', disabled: true },
 		{ href: '#', icon: '📊', label: 'Laporan Keuangan', disabled: true },
-		{ href: '/about', icon: 'ℹ️', label: 'Tentang' }
 	];
 </script>
 
 <nav class="navigation-bar">
 	<div class="nav-container">
 		<div class="logo">
-			<span class="logo-text">Laporin</span>
-			<span class="logo-dot"></span>
+			<a href="/">
+				<span class="logo-text">Laporin</span>
+				<span class="logo-dot"></span>
+			</a>
 		</div>
 		<div class="nav-links">
 			{#each navItems as item}

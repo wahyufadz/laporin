@@ -1,40 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { factories } from '$lib/customers';
-	import type { Factory } from '$lib/types';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
-
-	let selectedFactory: Factory | null = null;
-
-	function selectFactory(factory: Factory) {
-		selectedFactory = factory;
-		// Store the selected factory in localStorage for persistence
-		localStorage.setItem('selectedFactory', JSON.stringify(factory));
-		// Navigate to the orders page with the factory ID as a parameter
-		goto(`/orders/${factory.id}`);
-	}
-
-	// Check if a factory was previously selected
-	onMount(() => {
-		const storedFactory = localStorage.getItem('selectedFactory');
-		if (storedFactory) {
-			try {
-				const factory = JSON.parse(storedFactory) as Factory;
-				// Auto-select the factory if it exists in our list
-				if (factories.some(f => f.id === factory.id)) {
-					selectedFactory = factory;
-				}
-			} catch (e) {
-				console.error('Error parsing stored factory:', e);
-			}
-		}
-	});
 </script>
 
 <svelte:head>
-	<title>Laporin - Pilih Pabrik</title>
-	<meta name="description" content="Pilih pabrik untuk melanjutkan ke halaman pesanan" />
+	<title>Laporin</title>
+	<meta name="description" content="Tentang aplikasi Laporin - Aplikasi pelaporan pesanan tahu" />
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -43,23 +13,49 @@
 <div class="app-container">
 	<NavigationBar />
 
-	<header>
-		<h1>Pilih Pabrik</h1>
-		<p class="subtitle">Silakan pilih pabrik untuk melanjutkan ke halaman pesanan</p>
-	</header>
-
 	<main>
-		<div class="factories-grid">
-			{#each factories as factory}
-				<button 
-					class="factory-card card" 
-					on:click={() => selectFactory(factory)}
-					class:selected={selectedFactory?.id === factory.id}
-				>
-					<h2>{factory.name}</h2>
-					<p>Klik untuk melihat pesanan pabrik {factory.name}</p>
-				</button>
-			{/each}
+		<div class="about-content card">
+			<h1>Tentang Laporin</h1>
+			
+			<section class="about-section">
+				<h2>👋 Apa itu Laporin?</h2>
+				<p>
+					Laporin adalah aplikasi web yang dirancang untuk memudahkan pelaporan usaha. 
+					Aplikasi ini membantu kita dalam mengelola dan melaporkan pesanan pelanggan 
+					dengan lebih efisien dan terorganisir.
+				</p>
+			</section>
+
+			<section class="about-section">
+				<h2>✨ Fitur Utama</h2>
+				<ul>
+					<li>📱 Input pesanan yang mudah dan cepat</li>
+					<li>📊 Ringkasan pesanan yang jelas</li>
+					<li>📤 Kirim laporan langsung ke WhatsApp</li>
+					<li>📋 Format yang mudah di-copy paste ke spreadsheet</li>
+				</ul>
+			</section>
+
+			<section class="about-section">
+				<h2>🚀 Keunggulan</h2>
+				<ul>
+					<li>💻 Bisa diakses dari mana saja</li>
+					<li>📱 Responsif di semua perangkat</li>
+					<li>⚡ Cepat dan ringan</li>
+					<li>🔒 Data tersimpan dengan aman</li>
+				</ul>
+			</section>
+
+			<section class="about-section">
+				<h2>📞 Kontak</h2>
+				<p>
+					Jika Anda memiliki pertanyaan atau saran, silakan hubungi kami melalui:
+				</p>
+				<ul>
+					<li>📧 Email: support@laporin.com</li>
+					<li>📱 WhatsApp: +62 123 4567 890</li>
+				</ul>
+			</section>
 		</div>
 	</main>
 
@@ -78,91 +74,54 @@
 		flex-direction: column;
 	}
 
-	header {
-		text-align: center;
-		margin-bottom: 3rem;
-	}
-
-	.logo {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-bottom: 1rem;
-	}
-
-	.logo-text {
-		font-size: 2.5rem;
-		font-weight: 700;
-		color: var(--primary-color);
-	}
-
-	.logo-dot {
-		width: 12px;
-		height: 12px;
-		background-color: var(--accent-color);
-		border-radius: 50%;
-		margin-left: 4px;
-	}
-
-	h1 {
-		font-size: 2rem;
-		color: var(--text-color);
-		margin-bottom: 0.5rem;
-	}
-
-	.subtitle {
-		font-size: 1.1rem;
-		color: var(--text-light);
-		margin-bottom: 1rem;
-	}
-
 	main {
 		flex: 1;
 		display: flex;
 		justify-content: center;
-		align-items: center;
+		align-items: flex-start;
+		padding: 2rem 0;
 	}
 
-	.factories-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-		gap: 2rem;
+	.about-content {
+		max-width: 800px;
 		width: 100%;
-		max-width: 900px;
 	}
 
-	.factory-card {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 2rem;
-		text-align: center;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		border: 2px solid var(--border-color);
-	}
-
-	.factory-card:hover {
-		transform: translateY(-5px);
-		box-shadow: 0 10px 20px var(--shadow-color);
-		border-color: var(--primary-light);
-	}
-
-	.factory-card.selected {
-		border-color: var(--primary-color);
-		background-color: rgba(76, 175, 80, 0.05);
-	}
-
-	.factory-card h2 {
-		font-size: 1.5rem;
+	h1 {
+		font-size: 2rem;
 		color: var(--primary-color);
+		margin-bottom: 2rem;
+		text-align: center;
+	}
+
+	h2 {
+		font-size: 1.5rem;
+		color: var(--text-color);
+		margin: 2rem 0 1rem;
+	}
+
+	.about-section {
+		margin-bottom: 2rem;
+	}
+
+	p {
+		color: var(--text-color);
+		line-height: 1.6;
 		margin-bottom: 1rem;
 	}
 
-	.factory-card p {
-		color: var(--text-light);
-		font-size: 0.9rem;
+	ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	li {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+		color: var(--text-color);
 	}
 
 	footer {
@@ -175,13 +134,16 @@
 	}
 
 	@media (max-width: 768px) {
-		.factories-grid {
-			grid-template-columns: 1fr;
-			gap: 1.5rem;
+		.app-container {
+			padding: 1rem;
 		}
 
-		.factory-card {
-			padding: 1.5rem;
+		h1 {
+			font-size: 1.75rem;
+		}
+
+		h2 {
+			font-size: 1.25rem;
 		}
 	}
-</style>
+</style> 
