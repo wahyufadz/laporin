@@ -5,6 +5,8 @@
 	import { factories, customersByFactory } from '$lib/customer-data';
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
+	import NumberInput from '$lib/components/NumberInput.svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
 
 	// Get the factory ID from the URL
 	const factoryId = $page.params.factoryId;
@@ -94,10 +96,6 @@
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
 
-	function goBack() {
-		goto('/tahu');
-	}
-
 	$: totalOrders = Array.from(orders.values()).reduce((sum, qty) => sum + qty, 0);
 	$: totalMasak = totalOrders / 4; // Calculate total in "masak" format (with decimals)
 	$: isTotalMasakWhole = Number.isInteger(totalMasak); // Check if total masak is a whole number
@@ -119,9 +117,7 @@
 			<h1>Laporan Pesanan Tahu</h1>
 			<h2 class="factory-name">{selectedFactory?.name}</h2>
 		</div>
-		<button class="back-button" on:click={goBack}>
-			← Kembali
-		</button>
+		<BackButton backUrl="/tahu" />
 	</header>
 
 	<main>
@@ -268,18 +264,7 @@
 	}
 
 	.back-button {
-		position: absolute;
-		top: 0.5rem;
-		left: 0;
-		padding: 0.5rem 1rem;
-		background-color: var(--background-color);
-		border: 1px solid var(--border-color);
-		border-radius: 8px;
-		color: var(--text-color);
-		font-size: 0.9rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		z-index: 1;
+		display: none; /* Hide the old back button styles */
 	}
 
 	h1 {
@@ -515,11 +500,6 @@
 
 		header {
 			padding-top: 3rem;
-		}
-
-		.back-button {
-			top: 0.25rem;
-			padding: 0.4rem 0.75rem;
 		}
 
 		.customer-row {

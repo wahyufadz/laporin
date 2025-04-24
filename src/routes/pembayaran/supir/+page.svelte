@@ -4,6 +4,7 @@
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
 	import NumberInput from '$lib/components/NumberInput.svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
 
 	// Data sales
 	const salesList = [
@@ -68,10 +69,6 @@
 		return value.replace(/\./g, "");
 	}
 
-	function goBack() {
-		goto('/pembayaran');
-	}
-
 	// Validasi form
 	$: showPaymentForm = showForm && notaDates.length > 0;
 	$: isValid = showPaymentForm && (bayarNota || potonganNota);
@@ -92,9 +89,7 @@
 		<div class="header-content">
 			<h1>Laporan Pembayaran Supir</h1>
 		</div>
-		<button class="back-button" on:click={goBack}>
-			← Kembali
-		</button>
+		<BackButton backUrl="/pembayaran" />
 	</header>
 
 	<main>
@@ -240,18 +235,7 @@
 	}
 
 	.back-button {
-		position: absolute;
-		top: 0.5rem;
-		left: 0;
-		padding: 0.5rem 1rem;
-		background-color: var(--background-color);
-		border: 1px solid var(--border-color);
-		border-radius: 8px;
-		color: var(--text-color);
-		font-size: 0.9rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		z-index: 1;
+		display: none;
 	}
 
 	h1 {
@@ -350,11 +334,6 @@
 
 		header {
 			padding-top: 3rem;
-		}
-
-		.back-button {
-			top: 0.25rem;
-			padding: 0.4rem 0.75rem;
 		}
 
 		.form-section {
