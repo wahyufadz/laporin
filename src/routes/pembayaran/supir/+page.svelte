@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
-
+	import NumberInput from '$lib/components/NumberInput.svelte';
 
 	// Data sales
 	const salesList = [
@@ -148,46 +148,19 @@
 				{#if showPaymentForm}
 					<div class="form-group card">
 						<h2>Pembayaran</h2>
-						<div class="input-group">
-							<label for="bayar-nota">Bayar</label>
-							<input
-								id="bayar-nota"
-								type="text"
-								inputmode="numeric"
-								bind:value={bayarNota}
-								placeholder="0"
-								class="input-field"
-								on:focus={(e) => e.target.select()}
-								on:input={(e) => {
-									const value = unformatNumber((e.target as HTMLInputElement).value);
-									if (/^\d*$/.test(value)) {
-										bayarNota = formatNumber(value);
-									}
-								}}
-							/>
-						</div>
-					</div>
-
+						<NumberInput
+							id="bayar-nota"
+							label="Bayar"
+							bind:value={bayarNota}
+						/>
+                    </div>					
 					<div class="form-group card">
 						<h2>Potongan</h2>
-						<div class="input-group">
-							<label for="potongan-nota">Potongan</label>
-							<input
-								id="potongan-nota"
-								type="text"
-								inputmode="numeric"
-								bind:value={potonganNota}
-								placeholder="0"
-								class="input-field"
-								on:focus={(e) => e.target.select()}
-								on:input={(e) => {
-									const value = unformatNumber((e.target as HTMLInputElement).value);
-									if (/^\d*$/.test(value)) {
-										potonganNota = formatNumber(value);
-									}
-								}}
-							/>
-						</div>
+						<NumberInput
+							id="potongan-nota"
+							label="Potongan"
+							bind:value={potonganNota}
+						/>
 					</div>
 				{/if}
 			</section>

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
+	import NumberInput from '$lib/components/NumberInput.svelte';
 
 	// Data sales
 	const salesList = [
@@ -55,16 +55,6 @@
 			;
 
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
-	}
-
-	// Fungsi untuk memformat angka dengan titik
-	function formatNumber(value: string): string {
-		return value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-	}
-
-	// Fungsi untuk menghapus format titik saat input
-	function unformatNumber(value: string): string {
-		return value.replace(/\./g, "");
 	}
 
 	function goBack() {
@@ -121,39 +111,17 @@
 				<div class="form-group card">
 					<h2>Pembayaran</h2>
 					<div class="input-group">
-						<label for="bayar-tempe">Bayar Tempe</label>
-						<input
+						<NumberInput
 							id="bayar-tempe"
-							type="text"
-							inputmode="numeric"
+							label="Bayar Tempe"
 							bind:value={bayarTempe}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									bayarTempe = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 					<div class="input-group">
-						<label for="bayar-tahu">Bayar Tahu</label>
-						<input
+						<NumberInput
 							id="bayar-tahu"
-							type="text"
-							inputmode="numeric"
+							label="Bayar Tahu"
 							bind:value={bayarTahu}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									bayarTahu = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 				</div>
@@ -161,57 +129,24 @@
 				<div class="form-group card">
 					<h2>Retur Tempe</h2>
 					<div class="input-group">
-						<label for="retur-tempe-kecil">Tempe Kecil</label>
-						<input
+						<NumberInput
 							id="retur-tempe-kecil"
-							type="text"
-							inputmode="numeric"
+							label="Retur Tempe Kecil"
 							bind:value={returTempeKecil}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									returTempeKecil = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 					<div class="input-group">
-						<label for="retur-tempe-besar">Tempe Besar</label>
-						<input
+						<NumberInput
 							id="retur-tempe-besar"
-							type="text"
-							inputmode="numeric"
+							label="Retur Tempe Besar"
 							bind:value={returTempeBesar}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									returTempeBesar = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 					<div class="input-group">
-						<label for="retur-tempe-panjang">Tempe Panjang</label>
-						<input
+						<NumberInput
 							id="retur-tempe-panjang"
-							type="text"
-							inputmode="numeric"
+							label="Retur Tempe Panjang"
 							bind:value={returTempePanjang}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									returTempePanjang = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 				</div>
@@ -219,57 +154,24 @@
 				<div class="form-group card">
 					<h2>Pembelian Tempe</h2>
 					<div class="input-group">
-						<label for="beli-tempe-kecil">Tempe Kecil</label>
-						<input
+						<NumberInput
 							id="beli-tempe-kecil"
-							type="text"
-							inputmode="numeric"
+							label="Beli Tempe Kecil"
 							bind:value={beliTempeKecil}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									beliTempeKecil = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 					<div class="input-group">
-						<label for="beli-tempe-besar">Tempe Besar</label>
-						<input
+						<NumberInput
 							id="beli-tempe-besar"
-							type="text"
-							inputmode="numeric"
+							label="Beli Tempe Besar"
 							bind:value={beliTempeBesar}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									beliTempeBesar = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 					<div class="input-group">
-						<label for="beli-tempe-panjang">Tempe Panjang</label>
-						<input
+						<NumberInput
 							id="beli-tempe-panjang"
-							type="text"
-							inputmode="numeric"
+							label="Beli Tempe Panjang"
 							bind:value={beliTempePanjang}
-							placeholder="0"
-							class="input-field"
-							on:focus={(e) => e.target.select()}
-							on:input={(e) => {
-								const value = unformatNumber((e.target as HTMLInputElement).value);
-								if (/^\d*$/.test(value)) {
-									beliTempePanjang = formatNumber(value);
-								}
-							}}
 						/>
 					</div>
 				</div>
