@@ -2,11 +2,13 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { OrderInput, WhatsAppMessage, Customer, Factory } from '$lib/types';
-	import { factories, customersByFactory } from '$lib/customer-data';
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import BackButton from '$lib/components/BackButton.svelte';
+
+	export let data;
+	const { factories, customersByFactory } = data;
 
 	// Get the factory ID from the URL
 	const factoryId = $page.params.factoryId;

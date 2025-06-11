@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { factories } from '$lib/customer-data';
+	export let data;
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
+	
+	const { factories } = data;
 </script>
 
 <svelte:head>
