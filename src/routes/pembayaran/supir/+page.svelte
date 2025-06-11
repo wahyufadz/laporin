@@ -24,8 +24,14 @@
 	// State untuk pembayaran
 	let bayarNota = '';
 
-	// State untuk potongan
-	let potonganNota = '';
+	// State untuk potongan tahu
+	let potonganTahu = '';
+
+	// State untuk potongan tempe
+	let potonganTempe = '';
+
+	// State untuk wadah tahu kosong
+	let wadahTahuKosong = '';
 
 	function handleSalesSelect() {
 		showForm = !!selectedSales;
@@ -54,24 +60,14 @@
 			`${selectedSalesName}\n` +
 			`Tanggal Nota: ${notaDatesText}\n\n` +
 			`PEMBAYARAN\n` +
-			`${bayarNota || '0'}\t${potonganNota || '0'}`;
+			`${bayarNota || '0'}\t${potonganTahu || '0'}\t${potonganTempe || '0'}\t${wadahTahuKosong || '0'}`;
 
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
 
-	// Fungsi untuk memformat angka dengan titik
-	function formatNumber(value: string): string {
-		return value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-	}
-
-	// Fungsi untuk menghapus format titik saat input
-	function unformatNumber(value: string): string {
-		return value.replace(/\./g, "");
-	}
-
 	// Validasi form
 	$: showPaymentForm = showForm && notaDates.length > 0;
-	$: isValid = showPaymentForm && (bayarNota || potonganNota);
+	$: isValidToSend = showPaymentForm && (bayarNota || potonganTahu || potonganTempe || wadahTahuKosong);
 </script>
 
 <svelte:head>
@@ -122,6 +118,7 @@
 								<input
 									id="nota-date-{nota.id}"
 									type="date"
+									max={new Date().toISOString().split('T')[0]}
 									bind:value={nota.date}
 									class="input-field"
 								/>
@@ -150,11 +147,25 @@
 						/>
                     </div>					
 					<div class="form-group card">
-						<h2>Potongan</h2>
+						<h2>Wadah Tahu Kosong</h2>
 						<NumberInput
-							id="potongan-nota"
-							label="Potongan"
-							bind:value={potonganNota}
+							id="wadah-tahu-kosong"
+							label="Wadah Tahu Kosong"
+							bind:value={wadahTahuKosong}
+						/>
+					</div>
+					<div class="form-group card">
+						<h2>Potongan Tahu</h2>
+						<NumberInput
+							id="potongan-tahu"
+							label="Potongan Tahu"
+							bind:value={potonganTahu}
+						/>
+						<h2>Potongan Tempe</h2>
+						<NumberInput
+							id="potongan-tempe"
+							label="Potongan Tempe"
+							bind:value={potonganTempe}
 						/>
 					</div>
 				{/if}
@@ -186,10 +197,17 @@
 								<span class="label">Nominal Pembayaran:</span>
 								<span class="value">{bayarNota || '0'}</span>
 							</p>
-							{#if potonganNota}
+							{#if potonganTahu}
 								<p class="summary-line">
-									<span class="label">Potongan:</span>
-									<span class="value">{potonganNota}</span>
+									<span class="label">Potongan Tahu:</span>
+									<span class="value">{potonganTahu}</span>
+								</p>
+							{/if}
+							
+							{#if potonganTempe}
+								<p class="summary-line">
+									<span class="label">Potongan Tempe:</span>
+									<span class="value">{potonganTempe}</span>
 								</p>
 							{/if}
 						</div>
@@ -197,12 +215,12 @@
 				</div>
 
 				<a 
-					href={isValid ? generateWhatsAppLink() : '#'} 
+					href={isValidToSend ? generateWhatsAppLink() : '#'} 
 					target="_blank" 
-					class="whatsapp-button btn btn-primary {!isValid ? 'disabled' : ''}"
-					aria-disabled={!isValid}
+					class="whatsapp-button btn btn-primary {!isValidToSend ? 'disabled' : ''}"
+					aria-disabled={!isValidToSend}
 				>
-					{isValid ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
+					{isValidToSend ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
 				</a>
 			{/if}
 		{/if}

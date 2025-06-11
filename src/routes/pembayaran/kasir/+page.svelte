@@ -59,7 +59,7 @@
 	}
 
 	// Validasi form
-	$: isValid = showForm && (
+	$: isValidToSend = showForm && (
 		(bayarTempe || bayarTahu || returTempeKecil || returTempeBesar || returTempePanjang || beliTempeKecil || beliTempeBesar || beliTempePanjang)
 	);
 </script>
@@ -173,12 +173,12 @@
 			</section>
 
 			<a 
-				href={isValid ? generateWhatsAppLink() : '#'} 
+				href={isValidToSend ? generateWhatsAppLink() : '#'} 
 				target="_blank" 
-				class="whatsapp-button btn btn-primary {!isValid ? 'disabled' : ''}"
-				aria-disabled={!isValid}
+				class="whatsapp-button btn btn-primary {!isValidToSend ? 'disabled' : ''}"
+				aria-disabled={!isValidToSend}
 			>
-				{isValid ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
+				{isValidToSend ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
 			</a>
 		{/if}
 	</main>
