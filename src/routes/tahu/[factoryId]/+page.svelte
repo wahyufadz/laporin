@@ -7,8 +7,8 @@
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import BackButton from '$lib/components/BackButton.svelte';
 
-	export let data;
-	const { factories, customersByFactory } = data;
+	const { data } = $props();
+	const { factories, customersByFactory }: { factories: Factory[], customersByFactory: Record<string, Customer[]> } = data;
 
 	// Get the factory ID from the URL
 	const factoryId = $page.params.factoryId;
@@ -25,28 +25,29 @@
 	const initialCustomers = customersByFactory[factoryId] || [];
 	
 	// Create a reactive customers array
-	let customers: Customer[] = [...initialCustomers];
+	let customers: Customer[] = $state([...initialCustomers]);
 	
-	let orders: Map<string, number> = new Map(); // customerId -> quantity
-	let inputBy = '';
-	let showNewCustomerForm = false;
-	let newCustomer: Customer = {
+	// let orders: Map<string, number> = $state(new Map()); // customerId -> quantity
+	let orders: {[key:string]:number} = $state({});
+	let inputBy = $state('');
+	let showNewCustomerForm = $state(false);
+	let newCustomer: Customer = $state({
 		id: '',
 		name: ''
-	};
+	});
 
 	function addOrder(customerId: string, quantity: number) {
 		if (quantity > 0) {
-			orders.set(customerId, quantity);
-			orders = orders; // trigger reactivity
+			orders[customerId]=quantity;
+			// orders = orders; // trigger reactivity
 		} else {
 			removeOrder(customerId);
 		}
 	}
 
 	function removeOrder(customerId: string) {
-		orders.delete(customerId);
-		orders = orders; // trigger reactivity
+		orders = Object.fromEntries(Object.entries(orders).filter(([id]) => id !== customerId));
+		// orders = orders; // trigger reactivity
 	}
 
 	function addNewCustomer() {
@@ -79,7 +80,7 @@
 			inputBy,
 			orders: customers.map(customer => ({
 				customerName: customer.name,
-				quantity: orders.get(customer.id) || 0
+				quantity: orders[customer.id] || 0
 			}))
 		};
 
@@ -89,7 +90,7 @@
 			`*Ringkasan:*\n` +
 			`• Total Pesanan: ${totalOrders} pcs\n` +
 			`• Total Masak: ${totalMasak} masak\n` +
-			`• Jumlah Pelanggan: ${orders.size} pelanggan\n\n` +
+			`• Jumlah Pelanggan: ${Object.keys(orders).length} pelanggan\n\n` +
 			`*Daftar Pesanan:*\n` +
 			message.orders.map(order => 
 				`${order.customerName}\t\t${order.quantity}`
@@ -98,9 +99,9 @@
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
 
-	$: totalOrders = Array.from(orders.values()).reduce((sum, qty) => sum + qty, 0);
-	$: totalMasak = totalOrders / 4; // Calculate total in "masak" format (with decimals)
-	$: isTotalMasakWhole = Number.isInteger(totalMasak); // Check if total masak is a whole number
+	let totalOrders = $derived(Object.values(orders).reduce((sum, qty) => sum + qty, 0));
+	let totalMasak = $derived(totalOrders / 4); // Calculate total in "masak" format (with decimals)
+	let isTotalMasakWhole = $derived(Number.isInteger(totalMasak)); // Check if total masak is a whole number
 </script>
 
 <svelte:head>
@@ -141,7 +142,7 @@
 				<div class="section-header">
 					<h2>Daftar Pelanggan</h2>
 					<button 
-						on:click={() => showNewCustomerForm = !showNewCustomerForm}
+						onclick={() => showNewCustomerForm = !showNewCustomerForm}
 						class="btn btn-accent"
 					>
 						{showNewCustomerForm ? 'Batal' : '+ Tambah'}
@@ -161,7 +162,7 @@
 								class="input-field"
 							/>
 						</div>
-						<button on:click={addNewCustomer} class="btn btn-primary">
+						<button onclick={addNewCustomer} class="btn btn-primary">
 							Simpan Pelanggan
 						</button>
 					</div>
@@ -175,9 +176,9 @@
 							</div>
 							<div class="order-input">
 								<div class="input-group">
-									{#if orders.has(customer.id)}
+									{#if orders[customer.id]}
 										<button 
-											on:click={() => removeOrder(customer.id)}
+											onclick={() => removeOrder(customer.id)}
 											class="btn btn-danger"
 										>
 											Hapus
@@ -188,9 +189,9 @@
 										type="number"
 										min="0"
 										placeholder="0"
-										value={orders.get(customer.id) || ''}
-										on:input={(e) => addOrder(customer.id, parseInt(e.currentTarget.value) || 0)}
-										on:focus={(e) => e.target.select()}
+										value={orders[customer.id] || 0}
+										oninput={(e) => addOrder(customer.id, parseInt(e.currentTarget.value) || 0)}
+										onfocus={(e) => (e.target as HTMLInputElement).select()}
 										class="quantity-input"
 									/>
 								</div>
@@ -226,19 +227,19 @@
 						{/if}
 					</div>
 					<div class="stat-item">
-						<span class="stat-value">{orders.size}</span>
+						<span class="stat-value">{Object.keys(orders).length}</span>
 						<span class="stat-label">Jumlah Pelanggan</span>
 					</div>
 				</div>
 			</section>
 
 			<a 
-				href={orders.size > 0 && isTotalMasakWhole ? generateWhatsAppLink() : '#'} 
+				href={Object.keys(orders).length > 0 && isTotalMasakWhole ? generateWhatsAppLink() : '#'} 
 				target="_blank" 
-				class="whatsapp-button btn btn-primary {!orders.size || !isTotalMasakWhole ? 'disabled' : ''}"
-				aria-disabled={!orders.size || !isTotalMasakWhole}
+				class="whatsapp-button btn btn-primary {!Object.keys(orders).length || !isTotalMasakWhole ? 'disabled' : ''}"
+				aria-disabled={!Object.keys(orders).length || !isTotalMasakWhole}
 			>
-				{orders.size > 0 && isTotalMasakWhole ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
+				{Object.keys(orders).length > 0 && isTotalMasakWhole ? 'Kirim ke WhatsApp' : 'Lengkapi data terlebih dahulu'}
 			</a>
 		{/if}
 	</main>

@@ -1,11 +1,12 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getEdgeConfig } from '$lib/edge-config-helper';
+import type { Customer, Factory } from '$lib/types';
 
 export const load: PageServerLoad = async () => {
-    try {
-        const factories = await getEdgeConfig('factories');
-        const customersByFactory = await getEdgeConfig('customersByFactory');
+    try {  
+        const factories = await getEdgeConfig<Factory[]>('factories');
+        const customersByFactory = await getEdgeConfig<Customer[]>('customersByFactory');
 
         return {
             factories,

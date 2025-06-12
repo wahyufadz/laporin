@@ -1,37 +1,32 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import BackButton from '$lib/components/BackButton.svelte';
+	import type { PageProps } from './$types';
 
-	// Data sales
-	const salesList = [
-		{ id: '1', name: 'Sales 1' },
-		{ id: '2', name: 'Sales 2' },
-		{ id: '3', name: 'Sales 3' }
-	];
+	const { data }:PageProps = $props();
+	const { customersKasir } = data;
 
 	// State untuk form
-	let selectedSales = '';
-	let showForm = false;
+	let selectedSalesId = $state('');
+	let showForm = $state(false);
 
 	// State untuk pembayaran
-	let bayarTempe = '';
-	let bayarTahu = '';
+	let bayarTempe = $state('');
+	let bayarTahu = $state('');
 
 	// State untuk retur
-	let returTempeKecil = '';
-	let returTempeBesar = '';
-	let returTempePanjang = '';
+	let returTempeKecil = $state('');
+	let returTempeBesar = $state('');
+	let returTempePanjang = $state('');
 
 	// State untuk pembelian
-	let beliTempeKecil = '';
-	let beliTempeBesar = '';
-	let beliTempePanjang = '';
+	let beliTempeKecil = $state('');
+	let beliTempeBesar = $state('');
+	let beliTempePanjang = $state('');
 
 	function handleSalesSelect() {
-		showForm = !!selectedSales;
+		showForm = !!selectedSalesId;
 	}
 
 	function generateWhatsAppLink(): string {
@@ -40,7 +35,7 @@
 		const dayName = days[today.getDay()];
 		const formattedDate = `${dayName} ${today.toLocaleDateString('id-ID')}`;
 
-		const selectedSalesName = salesList.find(s => s.id === selectedSales)?.name || '';
+		const selectedSalesName = customersKasir.find(s => s.id === selectedSalesId)?.name || '';
 
 		const messageText = 
 			`${formattedDate}\n` +
@@ -55,13 +50,13 @@
             `${bayarTahu || '0'}`;
 			;
 
-		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
+		return `https://wa.me/${process.env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
 
 	// Validasi form
-	$: isValidToSend = showForm && (
+	const isValidToSend = $derived(showForm && (
 		(bayarTempe || bayarTahu || returTempeKecil || returTempeBesar || returTempePanjang || beliTempeKecil || beliTempeBesar || beliTempePanjang)
-	);
+	));
 </script>
 
 <svelte:head>
@@ -88,12 +83,12 @@
 				<label for="sales-select">Nama Sales</label>
 				<select
 					id="sales-select"
-					bind:value={selectedSales}
-					on:change={handleSalesSelect}
+					bind:value={selectedSalesId}
+					onchange={handleSalesSelect}
 					class="input-field"
 				>
 					<option value="">Pilih Sales</option>
-					{#each salesList as sales}
+					{#each customersKasir as sales}
 						<option value={sales.id}>{sales.name}</option>
 					{/each}
 				</select>
