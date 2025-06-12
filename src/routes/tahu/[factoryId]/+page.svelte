@@ -212,13 +212,17 @@
 					<div class="stat-item">
 						<span class="stat-value">{totalOrders}</span>
 						<span class="stat-label">Total Pesanan (pcs)</span>
+						{#if !isTotalMasakWhole}
+							<span class="stat-label warning">Total pesanan kurang {Math.ceil(totalMasak)*4 - totalOrders} pcs</span>
+						{/if}
 					</div>
 					<div class="stat-item">
-						<span class="stat-value">{totalMasak.toFixed(2)}</span>
-						{#if isTotalMasakWhole}
-							<span class="stat-label">Total Pesanan (masak)</span>
-						{:else}
-							<span class="stat-label warning">Total belum sesuai</span>
+						<span class="stat-value">
+							{Math.ceil(totalMasak)}
+						</span>
+						<span class="stat-label">Total Pesanan (masak)</span>
+						{#if !isTotalMasakWhole}
+						<span class="stat-label warning">Total pesanan kurang {Math.ceil(totalMasak)*4 - totalOrders} pcs</span>
 						{/if}
 					</div>
 					<div class="stat-item">

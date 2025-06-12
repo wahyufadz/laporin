@@ -1,14 +1,11 @@
+
 import { error } from '@sveltejs/kit';
-import { get } from "@vercel/edge-config";
 import type { PageServerLoad } from './$types';
+import { getEdgeConfig } from '$lib/edge-config-helper';
 
 export const load: PageServerLoad = async () => {
     try {
-        const factories = await get('factories');
-        
-        if (!factories) {
-            throw error(404, 'Factories data not found');
-        }
+        const factories = await getEdgeConfig('factories');
 
         return {
             factories

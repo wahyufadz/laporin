@@ -1,7 +1,7 @@
 <script lang="ts">
-	export let data;
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
 	
+	const { data } = $props();
 	const { factories } = data;
 </script>
 
