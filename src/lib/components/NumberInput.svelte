@@ -17,14 +17,45 @@
 	function handleInput(e: Event) {
 		const target = e.target as HTMLInputElement;
 		const unformattedValue = unformatNumber(target.value);
+		
+		// Only allow digits
 		if (/^\d*$/.test(unformattedValue)) {
 			value = formatNumber(unformattedValue);
+		} else {
+			// If invalid input, revert to previous valid value
+			target.value = value;
 		}
+	}
+
+	function handleKeyDown(e: KeyboardEvent) {
+		// Allow: backspace, delete, tab, escape, enter, decimal point
+		const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'];
+		
+		// Allow numbers
+		if (/^\d$/.test(e.key)) {
+			return true;
+		}
+		
+		// Allow allowed keys
+		if (allowedKeys.includes(e.key)) {
+			return true;
+		}
+		
+		// Prevent all other keys
+		e.preventDefault();
 	}
 
 	function handleFocus(e: Event) {
 		const target = e.target as HTMLInputElement;
 		target.select();
+	}
+
+	function handlePaste(e: ClipboardEvent) {
+		e.preventDefault();
+		const pastedText = e.clipboardData?.getData('text');
+		if (pastedText && /^\d+$/.test(pastedText)) {
+			value = formatNumber(pastedText);
+		}
 	}
 </script>
 
@@ -34,11 +65,14 @@
 		{id}
 		type="text"
 		inputmode="numeric"
+		pattern="[0-9]*"
 		bind:value
 		{placeholder}
 		class="input-field"
-		on:focus={handleFocus}
-		on:input={handleInput}
+		onfocus={handleFocus}
+		oninput={handleInput}
+		onkeydown={handleKeyDown}
+		onpaste={handlePaste}
 	/>
 </div>
 
