@@ -1,8 +1,36 @@
+<script context="module">
+
+	export function keydownHandleNumberInputOnly(e: KeyboardEvent) {
+		// Allow: backspace, delete, tab, escape, enter, decimal point
+		const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'];
+		
+		// Allow numbers
+		if (/^\d$/.test(e.key)) {
+			return true;
+		}
+		
+		// Allow allowed keys
+		if (allowedKeys.includes(e.key)) {
+			return true;
+		}
+		
+		// Prevent all other keys
+		e.preventDefault();
+	}
+
+	export function focusHandleSelectAllText(e: Event) {
+		const target = e.target as HTMLInputElement;
+		target.select();
+	}
+
+</script>
+
 <script lang="ts">
 	export let id: string;
 	export let label: string;
 	export let value: string;
 	export let placeholder = '0';
+	export let className: string = 'input-field';
 
 	// Fungsi untuk memformat angka dengan titik
 	function formatNumber(value: string): string {
@@ -26,31 +54,8 @@
 			target.value = value;
 		}
 	}
-
-	function handleKeyDown(e: KeyboardEvent) {
-		// Allow: backspace, delete, tab, escape, enter, decimal point
-		const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'];
-		
-		// Allow numbers
-		if (/^\d$/.test(e.key)) {
-			return true;
-		}
-		
-		// Allow allowed keys
-		if (allowedKeys.includes(e.key)) {
-			return true;
-		}
-		
-		// Prevent all other keys
-		e.preventDefault();
-	}
-
-	function handleFocus(e: Event) {
-		const target = e.target as HTMLInputElement;
-		target.select();
-	}
-
-	function handlePaste(e: ClipboardEvent) {
+	
+	function pasteHandleNumberInputOnly(e: ClipboardEvent) {
 		e.preventDefault();
 		const pastedText = e.clipboardData?.getData('text');
 		if (pastedText && /^\d+$/.test(pastedText)) {
@@ -68,11 +73,11 @@
 		pattern="[0-9]*"
 		bind:value
 		{placeholder}
-		class="input-field"
-		onfocus={handleFocus}
+		class={className}
+		onfocus={focusHandleSelectAllText}
 		oninput={handleInput}
-		onkeydown={handleKeyDown}
-		onpaste={handlePaste}
+		onkeydown={keydownHandleNumberInputOnly}
+		onpaste={pasteHandleNumberInputOnly}
 	/>
 </div>
 

@@ -4,11 +4,11 @@
 	import type { OrderInput, WhatsAppMessage, Customer, Factory } from '$lib/types';
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
-	import NumberInput from '$lib/components/NumberInput.svelte';
 	import BackButton from '$lib/components/BackButton.svelte';
+	import { keydownHandleNumberInputOnly, focusHandleSelectAllText } from '$lib/components/NumberInput.svelte';
 
 	const { data } = $props();
-	const { factories, customersByFactory }: { factories: Factory[], customersByFactory: Record<string, Customer[]> } = data;
+	const { factories, customersByFactory } = data;
 
 	// Get the factory ID from the URL
 	const factoryId = $page.params.factoryId;
@@ -191,7 +191,8 @@
 										placeholder="0"
 										value={orders[customer.id] || 0}
 										oninput={(e) => addOrder(customer.id, parseInt(e.currentTarget.value) || 0)}
-										onfocus={(e) => (e.target as HTMLInputElement).select()}
+										onfocus={focusHandleSelectAllText}
+										onkeydown={keydownHandleNumberInputOnly}
 										class="quantity-input"
 									/>
 								</div>
