@@ -57,6 +57,13 @@
 	const isValidToSend = $derived(showForm && (
 		(bayarTempe || bayarTahu || returTempeKecil || returTempeBesar || returTempePanjang || beliTempeKecil || beliTempeBesar || beliTempePanjang)
 	));
+
+	/**
+	 * TODO 
+	 * - Tambahkan summary pembayaran
+	 * - Tambahkan summary retur
+	 * - Tambahkan summary pembelian
+	*/
 </script>
 
 <svelte:head>
@@ -202,10 +209,6 @@
 
 	.header-content {
 		margin-bottom: 1rem;
-	}
-
-	.back-button {
-		display: none;
 	}
 
 	h1 {

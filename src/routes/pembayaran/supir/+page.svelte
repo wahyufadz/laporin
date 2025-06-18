@@ -1,37 +1,31 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import BackButton from '$lib/components/BackButton.svelte';
+	import type { PageProps } from './$types';
 
-	// Data sales
-	const salesList = [
-		{ id: '1', name: 'Sales 1' },
-		{ id: '2', name: 'Sales 2' },
-		{ id: '3', name: 'Sales 3' }
-	];
+	const { data }:PageProps = $props();
+	const { customersSupir } = data;
 
 	// State untuk form
-	let selectedSales = '';
-	let showForm = false;
+	let selectedSales = $state('');
+	let showForm = $state(false);
 
 	// State untuk tanggal nota
-	let notaDates: { id: number; date: string }[] = [];
+	let notaDates: { id: number; date: string }[] = $state([]);
 	let nextNotaId = 1;
 
 	// State untuk pembayaran
-	let bayarNota = '';
+	let bayarNota = $state('');
 
 	// State untuk potongan tahu
-	let potonganTahu = '';
+	let potonganTahu = $state('');
 
 	// State untuk potongan tempe
-	let potonganTempe = '';
+	let potonganTempe = $state('');
 
 	// State untuk wadah tahu kosong
-	let wadahTahuKosong = '';
+	let wadahTahuKosong = $state('');
 
 	function handleSalesSelect() {
 		showForm = !!selectedSales;
@@ -41,7 +35,7 @@
 		notaDates = [...notaDates, { id: nextNotaId, date: '' }];
 		nextNotaId++;
 	}
-	addNotaDate()
+	// addNotaDate()
 
 	function removeNotaDate(id: number) {
 		notaDates = notaDates.filter(nota => nota.id !== id);
@@ -53,21 +47,22 @@
 		const dayName = days[today.getDay()];
 		const formattedDate = `${dayName} ${today.toLocaleDateString('id-ID')}`;
 
-		const selectedSalesName = salesList.find(s => s.id === selectedSales)?.name || '';
+		const selectedSalesName = customersSupir.find(s => s.id === selectedSales)?.name || '';
 		const notaDatesText = notaDates.map(nota => nota.date).join(', ');
 
 		const messageText = `${formattedDate}\n` +
 			`${selectedSalesName}\n` +
 			`Tanggal Nota: ${notaDatesText}\n\n` +
+			`Wadah Tahu Kosong: ${wadahTahuKosong}\n\n` +
 			`PEMBAYARAN\n` +
 			`${bayarNota || '0'}\t${potonganTahu || '0'}\t${potonganTempe || '0'}\t${wadahTahuKosong || '0'}`;
 
-		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
+		return `https://wa.me/${process.env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
 
 	// Validasi form
-	$: showPaymentForm = showForm && notaDates.length > 0;
-	$: isValidToSend = showPaymentForm && (bayarNota || potonganTahu || potonganTempe || wadahTahuKosong);
+	let showPaymentForm = $derived(showForm && notaDates.length > 0);
+	let isValidToSend = $derived(showPaymentForm && (bayarNota || potonganTahu || potonganTempe || wadahTahuKosong));
 </script>
 
 <svelte:head>
@@ -96,11 +91,11 @@
 				<select
 					id="sales-select"
 					bind:value={selectedSales}
-					on:change={handleSalesSelect}
+					onchange={handleSalesSelect}
 					class="input-field"
 				>
 					<option value="">Pilih Sales</option>
-					{#each salesList as sales}
+					{#each customersSupir as sales}
 						<option value={sales.id}>{sales.name}</option>
 					{/each}
 				</select>
@@ -124,7 +119,7 @@
 								/>
 								<button 
 									class="remove-button" 
-									on:click={() => removeNotaDate(nota.id)}
+									onclick={() => removeNotaDate(nota.id)}
 									aria-label="Hapus tanggal nota"
 								>
 									🗑️
@@ -132,7 +127,7 @@
 							</div>
 						</div>
 					{/each}
-					<button class="add-button" on:click={addNotaDate}>
+					<button class="add-button" onclick={addNotaDate}>
 						+ Tambah Tanggal Nota
 					</button>
 				</div>
@@ -177,7 +172,7 @@
 					<div class="summary-content">
 						<p class="summary-line">
 							<span class="label">Nama Sales:</span>
-							<span class="value">{salesList.find(s => s.id === selectedSales)?.name || ''}</span>
+							<span class="value">{customersSupir.find(s => s.id === selectedSales)?.name || ''}</span>
 						</p>
 						<p class="summary-line">
 							<span class="label">Tanggal:</span>
