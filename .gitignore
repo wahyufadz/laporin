@@ -27,3 +27,6 @@ src/lib/customer-data.ts
 
 .vercel
 .env*.local
+
+# Google OAuth Credential
+google-oauth-credential.json
