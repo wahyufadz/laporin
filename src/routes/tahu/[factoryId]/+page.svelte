@@ -5,7 +5,8 @@
 	import { env } from '$env/dynamic/public';
 	import NavigationBar from '$lib/components/NavigationBar.svelte';
 	import BackButton from '$lib/components/BackButton.svelte';
-	import { keydownHandleNumberInputOnly, focusHandleSelectAllText } from '$lib/components/NumberInput.svelte';
+	import NumberInput, { keydownHandleNumberInputOnly, focusHandleSelectAllText } from '$lib/components/NumberInput.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	const { data } = $props();
 	const { factories, customersByFactory } = data;
@@ -68,6 +69,22 @@
 			};
 		}
 	}
+
+	let daftarPengeluaran = new SvelteMap<string, {label: string, value: number}>();
+	
+	function addNewPengeluaran() {
+		daftarPengeluaran.set(Date.now().toString(), {label: '', value: 0});
+	}
+
+	function addPengeluaran(id: string, label: string, value: number) {
+		daftarPengeluaran.set(id, {label, value});
+	}
+
+	function removePengeluaran(id: string) {
+		daftarPengeluaran.delete(id);
+	}
+
+	let totalPengeluaran = $derived([...daftarPengeluaran.values()].reduce((sum, pengeluaran) => sum + pengeluaran.value, 0));
 
 	function generateWhatsAppLink(): string {
 		const today = new Date();
@@ -138,7 +155,11 @@
 		</section>
 
 		<section class="customers-section">
-			{#if inputBy}
+			{#if !inputBy}
+				<div class="empty-state card">
+					<p>Silakan masukkan nama Anda di atas untuk melihat daftar pelanggan.</p>
+				</div>
+			{:else}
 				<div class="section-header">
 					<h2>Daftar Pelanggan</h2>
 					<button 
@@ -167,7 +188,6 @@
 						</button>
 					</div>
 				{/if}
-
 				<div class="customers-list">
 					{#each customers as customer}
 						<div class="customer-row card">
@@ -200,9 +220,42 @@
 						</div>
 					{/each}
 				</div>
-			{:else}
-				<div class="empty-state card">
-					<p>Silakan masukkan nama Anda di atas untuk melihat daftar pelanggan.</p>
+				<div class="pengeluaran">
+					{#each [...daftarPengeluaran.entries()] as [key, pengeluaran]}
+						<div class="pengeluaran-row card">
+							<div class="pengeluaran-label">
+								<input
+									id="pengeluaran-label-{key}"
+									type="text"
+									placeholder="Pengeluaran"
+									value={pengeluaran.label}
+									class="pengeluaran-label"
+								/>
+							</div>
+							<div class="pengeluaran-value">
+								<input
+									id="pengeluaran-value-{key}"
+									type="number"
+									min="0"
+									placeholder="0"
+									value={pengeluaran.value}
+									oninput={(e) => addPengeluaran(key, pengeluaran.label, parseInt(e.currentTarget.value) || 0)}
+									onfocus={focusHandleSelectAllText}
+									onkeydown={keydownHandleNumberInputOnly}
+									class="pengeluaran-value"
+								/>
+							</div>
+							<div class="pengeluaran-hapus">
+								<button onclick={() => removePengeluaran(key)} class="btn btn-danger">
+									Hapus
+								</button>
+							</div>
+						</div>
+					{/each}
+
+					<button onclick={addNewPengeluaran} class="btn btn-primary">
+						Tambah Pengeluaran
+					</button>
 				</div>
 			{/if}
 		</section>
@@ -232,6 +285,12 @@
 						<span class="stat-label">Jumlah Pelanggan</span>
 					</div>
 				</div>
+				{#if totalPengeluaran > 0}
+					<div class="stat-item">
+						<span class="stat-value">{totalPengeluaran.toLocaleString()}</span>
+						<span class="stat-label">Total Pengeluaran</span>
+					</div>
+				{/if}
 			</section>
 
 			<a 
@@ -587,6 +646,22 @@
 			justify-content: space-between;
 			align-items: center;
 			text-align: left;
+		}
+		.pengeluaran-row {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+
+		}
+		.pengeluaran-label {
+			flex: 1;
+		}
+		.pengeluaran-value {
+			flex: 5;	
+		}
+		.pengeluaran-hapus {
+			flex: 1;
 		}
 	}
 </style> 
