@@ -230,7 +230,8 @@
 					{/each}
 				</div>
 				<div class="pengeluaran">
-					{#each [...daftarPengeluaran.entries()] as [key, pengeluaran]}
+					{#each [...daftarPengeluaran.entries()] as [key, pengeluaran], index}
+						<b>Pengeluaran {index+1}</b> : {pengeluaran.value.toLocaleString()}
 						<div class="pengeluaran-row card">
 							<div class="pengeluaran-label">
 								<input

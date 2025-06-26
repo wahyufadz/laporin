@@ -6,7 +6,7 @@ import type { Customer, Factory } from '$lib/types';
 export const load: PageServerLoad = async () => {
     try {  
         const factories = await getEdgeConfig<Factory[]>('factories');
-        const customersByFactory = await getEdgeConfig<Customer[]>('customersByFactory');
+        const customersByFactory = await getEdgeConfig<{[factoryId:string]:Customer[]}>('customersByFactory');
 
         return {
             factories,
