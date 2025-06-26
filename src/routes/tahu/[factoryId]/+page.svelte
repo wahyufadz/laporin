@@ -101,7 +101,7 @@
 			}))
 		};
 
-		const messageText = `*Laporan Pesanan Tahu - ${selectedFactory?.name || 'Unknown'}*\n\n` +
+		let messageText = `*Laporan Pesanan Tahu - ${selectedFactory?.name || 'Unknown'}*\n\n` +
 			`Tanggal: ${message.date}\n` +
 			`Input oleh: ${message.inputBy}\n\n` +
 			`*Ringkasan:*\n` +
@@ -112,6 +112,15 @@
 			message.orders.map(order => 
 				`${order.customerName}\t\t${order.quantity}`
 			).join('\n');
+
+		if (totalPengeluaran > 0) {
+			messageText += '\n\n' +
+				`*Daftar Pengeluaran:*\n` +
+				[...daftarPengeluaran.values()].map(pengeluaran => 
+					`${pengeluaran.label}\t${pengeluaran.value.toLocaleString()}`
+				).join('\n')+
+				`\nTotal Pengeluaran: ${totalPengeluaran.toLocaleString()}`;
+		}
 
 		return `https://wa.me/${env.PUBLIC_ADMIN_WHATSAPP_NUMBER || ""}?text=${encodeURIComponent(messageText)}`;
 	}
@@ -229,6 +238,7 @@
 									type="text"
 									placeholder="Pengeluaran"
 									value={pengeluaran.label}
+									oninput={(e) => addPengeluaran(key, e.currentTarget.value, pengeluaran.value)}
 									class="pengeluaran-label"
 								/>
 							</div>
